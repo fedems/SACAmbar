@@ -46,200 +46,118 @@
 			am4core.useTheme(am4themes_animated);
 			// Themes end
             
-            var chartMin = -50;
-            var chartMax = 100;
-
-            var data = {
-              score: 52.7,
-              gradingData: [
-                {
-                  title: "Malo",
-                  color: "#ee1f25",
-                  lowScore: -100,
-                  highScore: -20
-                },
-                {
-                  title: "Volatil",
-                  color: "#f04922",
-                  lowScore: -20,
-                  highScore: 0
-                },
-                {
-                  title: "Bajo",
-                  color: "#fdae19",
-                  lowScore: 0,
-                  highScore: 20
-                },
-                {
-                  title: "Desarrollo",
-                  color: "#f3eb0c",
-                  lowScore: 20,
-                  highScore: 40
-                },
-                {
-                  title: "Maduro",
-                  color: "#b0d136",
-                  lowScore: 40,
-                  highScore: 60
-                },
-                {
-                  title: "Sostenible",
-                  color: "#54b947",
-                  lowScore: 60,
-                  highScore: 80
-                },
-                {
-                  title: "Alto",
-                  color: "#0f9747",
-                  lowScore: 80,
-                  highScore: 100
-                }
-              ]
-            };
+            var chart = am4core.create("chartdiv", am4charts.XYChart);
+            chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
             
-            /**
-            Grading Lookup
-             */
-            function lookUpGrade(lookupScore, grades) {
-              // Only change code below this line
-              for (var i = 0; i < grades.length; i++) {
-                if (
-                  grades[i].lowScore < lookupScore &&
-                  grades[i].highScore >= lookupScore
-                ) {
-                  return grades[i];
-                }
+            chart.data = [
+              {
+                country: "USA",
+                visits: 23725
+              },
+              {
+                country: "China",
+                visits: 1882
+              },
+              {
+                country: "Japan",
+                visits: 1809
+              },
+              {
+                country: "Germany",
+                visits: 1322
+              },
+              {
+                country: "UK",
+                visits: 1122
+              },
+              {
+                country: "France",
+                visits: 1114
+              },
+              {
+                country: "India",
+                visits: 984
+              },
+              {
+                country: "Spain",
+                visits: 711
+              },
+              {
+                country: "Netherlands",
+                visits: 665
+              },
+              {
+                country: "Russia",
+                visits: 580
+              },
+              {
+                country: "South Korea",
+                visits: 443
+              },
+              {
+                country: "Canada",
+                visits: 441
               }
-              return null;
-            }
-
-			// Create chart instance
-			var chart = am4core.create(divid, am4charts.GaugeChart);
+            ];
             
-            chart.hiddenState.properties.opacity = 0;
-            chart.fontSize = 8;
-            chart.innerRadius = am4core.percent(80);
-            chart.resizable = true;
-                        
-            /**
-             * Normal axis
-             */
+            var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+            categoryAxis.renderer.grid.template.location = 0;
+            categoryAxis.dataFields.category = "country";
+            categoryAxis.renderer.minGridDistance = 40;
+            categoryAxis.fontSize = 11;
 
-            var axis = chart.xAxes.push(new am4charts.ValueAxis());
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+            valueAxis.min = 0;
+            valueAxis.max = 24000;
+            valueAxis.strictMinMax = true;
+            valueAxis.renderer.minGridDistance = 30;
             
-            axis.min = chartMin;
-            axis.max = chartMax;
-            axis.strictMinMax = true;
-            axis.renderer.radius = am4core.percent(80);
-            axis.renderer.inside = true;
-            axis.renderer.line.strokeOpacity = 0.1;
-            axis.renderer.ticks.template.disabled = false;
-            axis.renderer.ticks.template.strokeOpacity = 1;
-            axis.renderer.ticks.template.strokeWidth = 0.5;
-            axis.renderer.ticks.template.length = 5;
-            axis.renderer.grid.template.disabled = true;
-            axis.renderer.labels.template.radius = am4core.percent(15);
-            axis.renderer.labels.template.fontSize = "0.9em";
+            // axis break
+            var axisBreak = valueAxis.axisBreaks.create();
+            axisBreak.startValue = 2100;
+            axisBreak.endValue = 22900;
+            //axisBreak.breakSize = 0.005;
 
-            /**
-             * Axis for ranges
-             */
+            // fixed axis break
+            var d = (axisBreak.endValue - axisBreak.startValue) / (valueAxis.max - valueAxis.min);
+            axisBreak.breakSize = 0.05 * (1 - d) / d; // 0.05 means that the break will take 5% of the total value axis height
 
-            var axis2 = chart.xAxes.push(new am4charts.ValueAxis());
+            // make break expand on hover
+            var hoverState = axisBreak.states.create("hover");
+            hoverState.properties.breakSize = 1;
+            hoverState.properties.opacity = 0.1;
+            hoverState.transitionDuration = 1500;
+
+            axisBreak.defaultState.transitionDuration = 1000;
+            /*
+            // this is exactly the same, but with events
+            axisBreak.events.on("over", function() {
+              axisBreak.animate(
+                [{ property: "breakSize", to: 1 }, { property: "opacity", to: 0.1 }],
+                1500,
+                am4core.ease.sinOut
+              );
+            });
+            axisBreak.events.on("out", function() {
+              axisBreak.animate(
+                [{ property: "breakSize", to: 0.005 }, { property: "opacity", to: 1 }],
+                1000,
+                am4core.ease.quadOut
+              );
+            });*/
+
+            var series = chart.series.push(new am4charts.ColumnSeries());
+            series.dataFields.categoryX = "country";
+            series.dataFields.valueY = "visits";
+            series.columns.template.tooltipText = "{valueY.value}";
+            series.columns.template.tooltipY = 0;
+            series.columns.template.strokeOpacity = 0;
+
+            // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
+            series.columns.template.adapter.add("fill", function(fill, target) {
+              return chart.colors.getIndex(target.dataItem.index);
+            });
             
-            axis2.min = chartMin;
-            axis2.max = chartMax;
-            axis2.strictMinMax = true;
-            axis2.renderer.labels.template.disabled = true;
-            axis2.renderer.ticks.template.disabled = true;
-            axis2.renderer.grid.template.disabled = false;
-            axis2.renderer.grid.template.opacity = 0.5;
-            axis2.renderer.labels.template.bent = true;
-            axis2.renderer.labels.template.fill = am4core.color("#000");
-            axis2.renderer.labels.template.fontWeight = "bold";
-            axis2.renderer.labels.template.fillOpacity = 0.3;
-
-            /**
-            Ranges
-            */
-
-            for (let grading of data.gradingData) {
-              var range = axis2.axisRanges.create();
-              range.axisFill.fill = am4core.color(grading.color);
-              range.axisFill.fillOpacity = 0.8;
-              range.axisFill.zIndex = -1;
-              range.value = grading.lowScore > chartMin ? grading.lowScore : chartMin;
-              range.endValue = grading.highScore < chartMax ? grading.highScore : chartMax;
-              range.grid.strokeOpacity = 0;
-              range.stroke = am4core.color(grading.color).lighten(-0.1);
-              range.label.inside = true;
-              range.label.text = grading.title.toUpperCase();
-              range.label.inside = true;
-              range.label.location = 0.5;
-              range.label.inside = true;
-              range.label.radius = am4core.percent(10);
-              range.label.paddingBottom = -5; // ~half font size
-              range.label.fontSize = "0.9em";
-            }
-
-            var matchingGrade = lookUpGrade(data.score, data.gradingData);
-
-            /**
-             * Label 1
-             */
-
-            var label = chart.radarContainer.createChild(am4core.Label);
-            label.isMeasured = false;
-            label.fontSize = "3em";
-            label.x = am4core.percent(50);
-            label.paddingBottom = 15;
-            label.horizontalCenter = "middle";
-            label.verticalCenter = "bottom";
-            //label.dataItem = data;
-            label.text = data.score.toFixed(1);
-            //label.text = "{score}";
-            label.fill = am4core.color(matchingGrade.color);
-
-            /**
-             * Label 2
-             */
-
-            var label2 = chart.radarContainer.createChild(am4core.Label);
-            label2.isMeasured = false;
-            label2.fontSize = "2em";
-            label2.horizontalCenter = "middle";
-            label2.verticalCenter = "bottom";
-            label2.text = matchingGrade.title.toUpperCase();
-            label2.fill = am4core.color(matchingGrade.color);
-
-
-            /**
-             * Hand
-             */
-
-            var hand = chart.hands.push(new am4charts.ClockHand());
-            hand.axis = axis2;
-            hand.innerRadius = am4core.percent(55);
-            hand.startWidth = 8;
-            hand.pin.disabled = true;
-            hand.value = data.score;
-            hand.fill = am4core.color("#444");
-            hand.stroke = am4core.color("#000");
-
-            hand.events.on("positionchanged", function(){
-              label.text = axis2.positionToValue(hand.currentPosition).toFixed(1);
-              var value2 = axis.positionToValue(hand.currentPosition);
-              var matchingGrade = lookUpGrade(axis.positionToValue(hand.currentPosition), data.gradingData);
-              label2.text = matchingGrade.title.toUpperCase();
-              label2.fill = am4core.color(matchingGrade.color);
-              label2.stroke = am4core.color(matchingGrade.color);  
-              label.fill = am4core.color(matchingGrade.color);
-            })
-            
-//            setInterval(function() {
-//                var value = chartMin + Math.random() * (chartMax - chartMin);
-//                hand.showValue(value, 1000, am4core.ease.cubicOut);
-//            }, 2000);
 		  } 
           else {            	
             	var foundIndex = Ar.findIndex(x => x.id == id);
