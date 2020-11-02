@@ -10,7 +10,7 @@
 		body {
 		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 		}
-		</style>       
+		</style>   
 	`;
 
     //https://www.amcharts.com/lib/4/core.js
@@ -42,11 +42,12 @@
 //        }
 
         if(firsttime === 0) {
+            
 			// Themes begin
 			am4core.useTheme(am4themes_animated);
 			// Themes end
             
-            var chart = am4core.create("chartdiv", am4charts.XYChart);
+            var chart = am4core.create(divid, am4charts.XYChart);
             chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
             
             chart.data = [
@@ -154,9 +155,9 @@
             series.columns.template.strokeOpacity = 0;
 
             // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
-            series.columns.template.adapter.add("fill", function(fill, target) {
-              return chart.colors.getIndex(target.dataItem.index);
-            });
+//            series.columns.template.adapter.add("fill", function(fill, target) {
+//              return chart.colors.getIndex(target.dataItem.index);
+//            });
             
 		  } 
           else {            	
