@@ -1,5 +1,5 @@
 {
-	"id": "com.fd.amchartsgauge",
+	"id": "com.fd.amchartsbar",
 	"version": "1.0.0",
 	"name": "amCharts demo aguja",
 	"description": "amCharts demo aguja",
@@ -11,8 +11,8 @@
 	"webcomponents": [
 		{
 			"kind": "main",
-			"tag": "com-fd-amchartsgauge",
-			"url": "https://fedems.github.io/SACGSheet/box/box.js",
+			"tag": "com-fd-amchartsbar",
+			"url": "https://fedems.github.io/SACAmbar/box/box.js",
 			"integrity": "",
 			"ignoreIntegrity": true
 		}
